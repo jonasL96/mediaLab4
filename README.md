@@ -1,3 +1,6 @@
+# Tested on:
+Default Samsung Mobile Browser
+Google Chrome for Android
 # mediaLab4
 
 This lab aims to build your first WebRTC app.
