@@ -17,9 +17,6 @@
     <meta itemprop="name" content="WebRTC code samples">
     <meta name="mobile-web-app-capable" content="yes">
     <meta id="theme-color" name="theme-color" content="#ffffff">
-    <script src="js/tracking-min.js"></script>
-    <script src="js/face-min.js"></script>
-    <script src="js/assets/stats.min.js"></script>
 
     <base target="_blank">
 
@@ -27,7 +24,11 @@
 
     <link rel="icon" sizes="192x192" href="../../../images/webrtc-icon-192x192.png">
     <link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="../../../css/main.css">
+    <link rel="stylesheet" href="css/main.css">
+	<script src="js/tracking-min.js"></script>
+    <script src="js/face-min.js"></script>
+   <script src="js/dat.gui.min.js"></script>
+
 
     <style>
         .none {
@@ -54,21 +55,30 @@
             margin: 0 10px 25px 0;
             width: 110px;
         }
-        video {
-            object-fit: cover;
-        }
+        video{
+    margin-left: 230px;
+    margin-top: 120px;
+    position: absolute;
+  }
+  canvas{
+    margin-left: 230px;
+    margin-top: 120px;
+    position: absolute;
+  }
     </style>
 
 </head>
 
 <body>
-<div id="container">
+
 
     <h1><a href="//webrtc.github.io/samples/" title="WebRTC samples homepage">WebRTC samples</a> <span>getUserMedia + CSS filters</span>
     </h1>
-
-    <video playsinline autoplay></video>
-
+ <div class="demo-container">
+      <video id="video" width="320" height="240" preload autoplay loop muted></video>
+      <canvas id="canvas" width="320" height="240"></canvas>
+    </div>
+<div id="container">
     <label for="filter">Filter: </label>
     <select id="filter">
         <option value="none">None</option>
@@ -78,13 +88,41 @@
         <option value="sepia">Sepia</option>
     </select>
 
-    <canvas></canvas>
-
+    <button id="snapshot">Apply</button>
 </div>
 
 <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 <script src="js/main.js" async></script>
 
-<script src="../../../js/lib/ga.js"></script>
+<script src="js/ga.js"></script>
+
+<script>
+    window.onload = function() {
+      var video = document.getElementById('video');
+      var canvas = document.getElementById('canvas');
+      var context = canvas.getContext('2d');
+      var tracker = new tracking.ObjectTracker('face');
+      tracker.setInitialScale(4);
+      tracker.setStepSize(2);
+      tracker.setEdgesDensity(0.1);
+      tracking.track('#video', tracker, { camera: true });
+      tracker.on('track', function(event) {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        event.data.forEach(function(rect) {
+          context.strokeStyle = '#a64ceb';
+          context.strokeRect(rect.x, rect.y, rect.width, rect.height);
+          context.font = '11px Helvetica';
+          context.fillStyle = "rgba(255, 255, 255, 1)";
+          context.fillText('x: ' + rect.x + 'px', rect.x + rect.width + 5, rect.y + 11);
+          context.fillText('y: ' + rect.y + 'px', rect.x + rect.width + 5, rect.y + 22);
+        });
+      });
+      var gui = new dat.GUI();
+      gui.add(tracker, 'edgesDensity', 0.1, 0.5).step(0.01);
+      gui.add(tracker, 'initialScale', 1.0, 10.0).step(0.1);
+      gui.add(tracker, 'stepSize', 1, 5).step(0.1);
+    };
+  </script>
+
 </body>
 </html>
